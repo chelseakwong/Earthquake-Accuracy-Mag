@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<style type="text/css">
+		body { margin:0; padding: 0;}
+		html, #map { position:absolute; top:0; bottom:0; width:100%;}
+	</style>
+
+	<title>Earthquakes</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<!-- leaflet -->
+	<link rel="stylesheet" href="stylesheets/leaflet.css" />
+	<script src="src/leaflet-src.js"></script>
+
+	<!-- adding in jquery because WE CAN -->
+	<script src="src/jq.min.js"></script>
+
+	<!-- Papa parse for csv -->
+	<script src="src/papaparse.min.js"></script>
+
+</head>
+
+<body>
+  <div id="map">
+
+  </div>
+	<script>
+		// B A S E  L A Y E R: source for our tile layer
+    var token = "pk.eyJ1IjoiY2hlbHNlYTE1MTciLCJhIjoiY2lqb2N5Y2JsMDB0eHVmbTVlcnhyMDd6dCJ9.5mqK5gP_P0aDCrlP7ux7ZQ";
+    var url = "https://api.mapbox.com/v4/mapbox.light/{z}/{x}/{y}.png?access_token="+token;
+		osmAttrib = 'Map tiles by <a href="https://www.mapbox.com/developers/api/maps/#tiles">MapBox</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.',
+
+		baselayer = L.tileLayer(url, {attribution: osmAttrib})
+
+		var map = new L.Map('map', {layers: [baselayer], center: new L.LatLng(40.74188, -74.00473), zoom: 3 });
+
+		//P A R S E
+		// function handleFileSelect(evt) {
+	 // 		var file = evt.target.files[0];
+      var filePath = "data/earthquakes_all_month.csv";
+      Papa.parse(filePath, {
+        download:true,
+				header:true,
+				complete: function(results,file){
+					console.log("Finished parsing map file!");
+          // go through results and plot
+					for (i = 0; i<results.data.length; i++){
+						var lat = parseFloat(results.data[i].latitude);
+						var long = parseFloat(results.data[i].longitude);
+            var mag = parseFloat(results.data[i].mag);
+						var place = results.data[i].place;
+						var newMarker = new L.circleMarker(new L.LatLng(lat,long), {
+              fillColor: "#e61a39",
+              stroke: false,
+              radius: 7,
+							opacity: 0.5
+						});
+						newMarker.bindPopup('<p>Magnitude: '+mag+'</p>'+'<p>Place: '+place+'</p>');
+						newMarker.addTo(map);
+					}
+				}
+			});
+		// }
+	</script>
+</body>
